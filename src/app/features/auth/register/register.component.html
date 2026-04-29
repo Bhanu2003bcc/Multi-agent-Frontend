@@ -1,0 +1,88 @@
+<div class="auth-page">
+  <div class="auth-bg">
+    <div class="auth-bg__grid"></div>
+    <div class="auth-bg__glow"></div>
+  </div>
+
+  <div class="auth-card auth-card--register fade-in" style="width: 100%; box-sizing: border-box;">
+    <div class="auth-brand">
+      <svg width="36" height="36" viewBox="0 0 28 28" fill="none">
+        <circle cx="14" cy="14" r="13" stroke="#f0a500" stroke-width="1.5"/>
+        <path d="M8 14h5m0 0l-2-3m2 3l-2 3m5-3h5m-2-3l2 3-2 3" stroke="#f0a500" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cx="8" cy="14" r="2" fill="#f0a500"/>
+        <circle cx="20" cy="14" r="2" fill="#f0a500"/>
+      </svg>
+      <span class="auth-brand__name">ResearchAI</span>
+    </div>
+
+    <div class="auth-heading">
+      <h1>Create account</h1>
+      <p>Join the research platform</p>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">First Name</label>
+          <input type="text" class="form-control" formControlName="firstName" placeholder="Jane"/>
+          @if (f['firstName'].invalid && f['firstName'].touched) {
+            <span class="form-error">Required</span>
+          }
+        </div>
+        <div class="form-group">
+          <label class="form-label">Last Name</label>
+          <input type="text" class="form-control" formControlName="lastName" placeholder="Smith"/>
+          @if (f['lastName'].invalid && f['lastName'].touched) {
+            <span class="form-error">Required</span>
+          }
+        </div>
+      </div>
+
+      <div class="form-group mt-4">
+        <label class="form-label">Email address</label>
+        <input type="email" class="form-control" formControlName="email" placeholder="jane@company.com" autocomplete="email"/>
+        @if (f['email'].invalid && f['email'].touched) {
+          <span class="form-error">Valid email required</span>
+        }
+      </div>
+
+      <div class="form-row mt-4">
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <div class="input-group">
+            <input [type]="showPassword() ? 'text' : 'password'" class="form-control"
+                   formControlName="password" placeholder="Min. 8 characters" autocomplete="new-password"/>
+            <button type="button" class="input-group__toggle" (click)="showPassword.update(v=>!v)" tabindex="-1">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+          @if (f['password'].invalid && f['password'].touched) {
+            <span class="form-error">Min. 8 characters</span>
+          }
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirm Password</label>
+          <input [type]="showPassword() ? 'text' : 'password'" class="form-control"
+                 formControlName="confirmPassword" placeholder="Repeat password" autocomplete="new-password"/>
+          @if (f['confirmPassword'].touched && form.errors?.['passwordMismatch']) {
+            <span class="form-error">Passwords do not match</span>
+          }
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn--primary btn--full btn--lg mt-6" [disabled]="loading()">
+        @if (loading()) {
+          <span class="spinner spinner--sm"></span>
+        }
+        <span>{{ loading() ? 'Creating account…' : 'Create account' }}</span>
+      </button>
+    </form>
+
+    <p class="auth-footer">
+      Already have an account? <a routerLink="/auth/login">Sign in</a>
+    </p>
+  </div>
+</div>

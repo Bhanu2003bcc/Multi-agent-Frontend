@@ -1,0 +1,413 @@
+<div class="app-shell">
+  <app-sidebar />
+
+  <main class="app-main">
+    <div class="page-content">
+
+      <!-- Loading skeleton -->
+      @if (loading()) {
+        <div class="skeleton-header fade-in">
+          <div class="skeleton skeleton--line skeleton--w60"></div>
+          <div class="skeleton skeleton--line skeleton--w40 mt-2"></div>
+        </div>
+        <div class="skeleton skeleton--card mt-4"></div>
+      }
+
+      @if (!loading() && job()) {
+
+        <!-- ── Page header ────────────────────────────────────────────────── -->
+        <div class="page-header result-header fade-in">
+          <div class="result-header__top">
+            <a routerLink="/research/history" class="back-link">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 5l-7 7 7 7"/>
+              </svg>
+              All Research
+            </a>
+            <div class="result-header__badges">
+              <span class="badge badge--{{ job()!.status.toLowerCase() }}">
+                @if (isActive()) {
+                  <span class="badge-pulse"></span>
+                }
+                {{ job()!.status.replace('_', ' ') }}
+              </span>
+              <span class="job-id-badge">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/>
+                  <line x1="9" y1="9" x2="15" y2="9"/>
+                  <line x1="9" y1="12" x2="15" y2="12"/>
+                  <line x1="9" y1="15" x2="12" y2="15"/>
+                </svg>
+                {{ job()!.jobId | slice:0:8 }}…
+              </span>
+            </div>
+          </div>
+          <h1 class="result-query">"{{ job()!.query }}"</h1>
+          <div class="result-meta">
+            <span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/>
+              </svg>
+              {{ formatDate(job()!.createdAt) }}
+            </span>
+            @if (elapsedLabel()) {
+              <span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="13,2 3,14 12,14 11,22 21,10 12,10"/>
+                </svg>
+                {{ elapsedLabel() }} pipeline time
+              </span>
+            }
+            @if (result()?.refinementIterationsRun !== undefined) {
+              <span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="1,4 1,10 7,10"/><path d="M3.51 15a9 9 0 1 0 .49-3.1"/>
+                </svg>
+                {{ result()!.refinementIterationsRun }} refinement{{ result()!.refinementIterationsRun !== 1 ? 's' : '' }}
+              </span>
+            }
+          </div>
+        </div>
+
+        <!-- ── IN PROGRESS state ──────────────────────────────────────────── -->
+        @if (isActive()) {
+          <div class="card pipeline-progress fade-in">
+            <div class="pipeline-progress__header">
+              <div class="flex items-center gap-3">
+                <div class="spinner"></div>
+                <div>
+                  <div class="pipeline-progress__title">Research pipeline running</div>
+                  <div class="pipeline-progress__subtitle">This typically takes 20–60 seconds</div>
+                </div>
+              </div>
+              <button class="btn btn--danger btn--sm" (click)="cancelJob()" [disabled]="cancelling()">
+                @if (cancelling()) {
+                  <span class="spinner spinner--sm"></span>
+                }
+                {{ cancelling() ? 'Cancelling…' : 'Cancel' }}
+              </button>
+            </div>
+
+            <div class="progress-bar mt-4">
+              <div class="progress-bar__indeterminate"></div>
+            </div>
+
+            <div class="pipeline-stages-tracker mt-4">
+              @for (stage of pipelineStages; track stage.key; let i = $index) {
+                <div class="stage-step">
+                  @if (i <= 2) {
+                    <div class="stage-step__dot stage-step__dot--active"></div>
+                  } @else {
+                    <div class="stage-step__dot stage-step__dot--pending"></div>
+                  }
+                  <span class="stage-step__label">{{ stage.label }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- ── FAILED state ────────────────────────────────────────────────── -->
+        @if (isFailed()) {
+          <div class="card error-card fade-in">
+            <div class="error-card__icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="15" y1="9" x2="9" y2="15"/>
+                <line x1="9" y1="9" x2="15" y2="15"/>
+              </svg>
+            </div>
+            <div>
+              <h3>Pipeline failed</h3>
+              @if (job()!.errorMessage) {
+                <p>{{ job()!.errorMessage }}</p>
+              } @else {
+                <p>The research pipeline encountered an unexpected error.</p>
+              }
+              <a routerLink="/research/new" class="btn btn--primary mt-4" style="display:inline-flex">
+                Try again
+              </a>
+            </div>
+          </div>
+        }
+
+        <!-- ── CANCELLED state ────────────────────────────────────────────── -->
+        @if (isCancelled()) {
+          <div class="card cancelled-card fade-in">
+            <p>This research job was cancelled.</p>
+            <a routerLink="/research/new" class="btn btn--secondary mt-4" style="display:inline-flex">Start new research</a>
+          </div>
+        }
+
+        <!-- ── COMPLETED result ────────────────────────────────────────────── -->
+        @if (isCompleted() && result()) {
+
+          <!-- Metrics bar -->
+          <div class="metrics-bar fade-in fade-in-delay-1">
+
+            <!-- Confidence ring -->
+            <div class="metrics-bar__confidence">
+              <div class="confidence-ring">
+                <svg width="90" height="90" viewBox="0 0 90 90">
+                  <circle cx="45" cy="45" r="36" fill="none" stroke="var(--color-border)" stroke-width="4"/>
+                  <circle cx="45" cy="45" r="36" fill="none"
+                          [attr.stroke]="confidenceColor()"
+                          stroke-width="4"
+                          stroke-linecap="round"
+                          [attr.stroke-dasharray]="circumference"
+                          [attr.stroke-dashoffset]="strokeDashoffset()"
+                          transform="rotate(-90 45 45)"
+                          style="transition: stroke-dashoffset 1s ease"/>
+                </svg>
+                <div class="confidence-ring__value" [style.color]="confidenceColor()">
+                  {{ confidencePct() }}%
+                </div>
+              </div>
+              <div class="confidence-ring__label">
+                <span class="text-primary" style="font-weight:600; font-size:0.9375rem">Confidence</span>
+                <span class="text-muted" style="font-size:0.75rem; font-family:var(--font-mono)">
+                  {{ confidencePct() >= 80 ? 'High' : confidencePct() >= 60 ? 'Medium' : 'Low' }}
+                </span>
+              </div>
+            </div>
+
+            <div class="metrics-bar__divider"></div>
+
+            <!-- Quick stats -->
+            <div class="metrics-bar__stats">
+              <div class="quick-stat">
+                <span class="quick-stat__value">{{ result()!.sources.length }}</span>
+                <span class="quick-stat__label">Sources</span>
+              </div>
+              <div class="quick-stat">
+                <span class="quick-stat__value">{{ result()!.refinementIterationsRun }}</span>
+                <span class="quick-stat__label">Refinements</span>
+              </div>
+              @if (result()!.elapsedSeconds) {
+                <div class="quick-stat">
+                  <span class="quick-stat__value">{{ result()!.elapsedSeconds | number:'1.0-0' }}s</span>
+                  <span class="quick-stat__label">Duration</span>
+                </div>
+              }
+              @if (result()!.criticFeedback) {
+                <div class="quick-stat">
+                  <span class="quick-stat__value"
+                        [style.color]="scoreColor(result()!.criticFeedback!.overallQuality)">
+                    {{ (result()!.criticFeedback!.overallQuality * 100).toFixed(0) }}%
+                  </span>
+                  <span class="quick-stat__label">Quality</span>
+                </div>
+              }
+            </div>
+
+            <!-- Actions -->
+            <div class="metrics-bar__actions">
+              <button class="btn btn--secondary btn--sm" (click)="copyAnswer()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                  <rect x="9" y="9" width="13" height="13" rx="2"/>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+                Copy
+              </button>
+              <a routerLink="/research/new" class="btn btn--primary btn--sm">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                New Research
+              </a>
+            </div>
+          </div>
+
+          <!-- Tab navigation -->
+          <div class="tabs fade-in fade-in-delay-2">
+            <button class="tab" [class.tab--active]="activeTab() === 'answer'" (click)="setTab('answer')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14,2 14,8 20,8"/>
+              </svg>
+              Answer
+            </button>
+            <button class="tab" [class.tab--active]="activeTab() === 'sources'" (click)="setTab('sources')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="2" y1="12" x2="22" y2="12"/>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+              </svg>
+              Sources
+              <span class="tab-count">{{ result()!.sources.length }}</span>
+            </button>
+            @if (result()!.criticFeedback) {
+              <button class="tab" [class.tab--active]="activeTab() === 'analysis'" (click)="setTab('analysis')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                  <polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/>
+                </svg>
+                Quality Analysis
+              </button>
+            }
+          </div>
+
+          <!-- ── TAB: ANSWER ─────────────────────────────────────────────── -->
+          @if (activeTab() === 'answer') {
+            <div class="card answer-card fade-in">
+              <div class="research-answer" [innerHTML]="renderedAnswer()"></div>
+
+              @if (result()!.pipelineErrors?.length) {
+                <div class="pipeline-errors mt-4">
+                  <div class="pipeline-errors__title">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                      <line x1="12" y1="9" x2="12" y2="13"/>
+                      <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                    Pipeline warnings
+                  </div>
+                  @for (err of result()!.pipelineErrors; track err) {
+                    <p class="pipeline-errors__item">{{ err }}</p>
+                  }
+                </div>
+              }
+            </div>
+          }
+
+          <!-- ── TAB: SOURCES ────────────────────────────────────────────── -->
+          @if (activeTab() === 'sources') {
+            <div class="sources-grid fade-in">
+              @for (src of result()!.sources; track src; let i = $index) {
+                <a [href]="src" target="_blank" rel="noopener noreferrer"
+                   class="source-card card card--glow">
+                  <div class="source-card__index">{{ i + 1 }}</div>
+                  <div class="source-card__body">
+                    <div class="source-card__domain">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="2" y1="12" x2="22" y2="12"/>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                      </svg>
+                      {{ domainList()[i] }}
+                    </div>
+                    <div class="source-card__url">{{ src }}</div>
+                  </div>
+                  <div class="source-card__arrow">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="7" y1="17" x2="17" y2="7"/>
+                      <polyline points="7,7 17,7 17,17"/>
+                    </svg>
+                  </div>
+                </a>
+              }
+            </div>
+          }
+
+          <!-- ── TAB: QUALITY ANALYSIS ──────────────────────────────────── -->
+          @if (activeTab() === 'analysis' && result()!.criticFeedback) {
+            <div class="analysis-grid fade-in">
+
+              <!-- Score cards -->
+              <div class="card score-card">
+                <div class="score-card__title">Factual Correctness</div>
+                <div class="score-bar-wrap">
+                  <div class="score-bar">
+                    <div class="score-bar__fill"
+                         [style.width.%]="result()!.criticFeedback!.factualCorrectnessScore * 100"
+                         [style.background]="scoreColor(result()!.criticFeedback!.factualCorrectnessScore)">
+                    </div>
+                  </div>
+                  <span class="score-pct" [style.color]="scoreColor(result()!.criticFeedback!.factualCorrectnessScore)">
+                    {{ (result()!.criticFeedback!.factualCorrectnessScore * 100).toFixed(0) }}%
+                  </span>
+                </div>
+                <p class="score-card__label">{{ scoreLabel(result()!.criticFeedback!.factualCorrectnessScore) }} factual accuracy</p>
+              </div>
+
+              <div class="card score-card">
+                <div class="score-card__title">Completeness</div>
+                <div class="score-bar-wrap">
+                  <div class="score-bar">
+                    <div class="score-bar__fill"
+                         [style.width.%]="result()!.criticFeedback!.completenessScore * 100"
+                         [style.background]="scoreColor(result()!.criticFeedback!.completenessScore)">
+                    </div>
+                  </div>
+                  <span class="score-pct" [style.color]="scoreColor(result()!.criticFeedback!.completenessScore)">
+                    {{ (result()!.criticFeedback!.completenessScore * 100).toFixed(0) }}%
+                  </span>
+                </div>
+                <p class="score-card__label">{{ scoreLabel(result()!.criticFeedback!.completenessScore) }} coverage</p>
+              </div>
+
+              <div class="card score-card">
+                <div class="score-card__title">Hallucination Risk</div>
+                <div class="score-bar-wrap">
+                  <div class="score-bar">
+                    <div class="score-bar__fill"
+                         [style.width.%]="result()!.criticFeedback!.hallucinationRisk * 100"
+                         [style.background]="scoreColor(1 - result()!.criticFeedback!.hallucinationRisk)">
+                    </div>
+                  </div>
+                  <span class="score-pct" [style.color]="scoreColor(1 - result()!.criticFeedback!.hallucinationRisk)">
+                    {{ (result()!.criticFeedback!.hallucinationRisk * 100).toFixed(0) }}%
+                  </span>
+                </div>
+                <p class="score-card__label">{{ scoreLabel(1 - result()!.criticFeedback!.hallucinationRisk) }} reliability</p>
+              </div>
+
+              <div class="card score-card">
+                <div class="score-card__title">Overall Quality</div>
+                <div class="score-bar-wrap">
+                  <div class="score-bar">
+                    <div class="score-bar__fill"
+                         [style.width.%]="result()!.criticFeedback!.overallQuality * 100"
+                         [style.background]="scoreColor(result()!.criticFeedback!.overallQuality)">
+                    </div>
+                  </div>
+                  <span class="score-pct" [style.color]="scoreColor(result()!.criticFeedback!.overallQuality)">
+                    {{ (result()!.criticFeedback!.overallQuality * 100).toFixed(0) }}%
+                  </span>
+                </div>
+                <p class="score-card__label">{{ scoreLabel(result()!.criticFeedback!.overallQuality) }} overall</p>
+              </div>
+
+              @if (result()!.criticFeedback!.missingInformation?.length) {
+                <div class="card analysis-list-card">
+                  <div class="analysis-list-card__title">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"/>
+                      <line x1="12" y1="8" x2="12" y2="12"/>
+                      <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                    Missing Information
+                  </div>
+                  <ul class="analysis-list">
+                    @for (item of result()!.criticFeedback!.missingInformation; track item) {
+                      <li>{{ item }}</li>
+                    }
+                  </ul>
+                </div>
+              }
+
+              @if (result()!.criticFeedback!.improvementSuggestions?.length) {
+                <div class="card analysis-list-card">
+                  <div class="analysis-list-card__title">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polygon points="13,2 3,14 12,14 11,22 21,10 12,10"/>
+                    </svg>
+                    Improvement Suggestions
+                  </div>
+                  <ul class="analysis-list analysis-list--suggestions">
+                    @for (s of result()!.criticFeedback!.improvementSuggestions; track s) {
+                      <li>{{ s }}</li>
+                    }
+                  </ul>
+                </div>
+              }
+
+            </div>
+          }
+
+        }
+
+      }
+
+    </div>
+  </main>
+</div>

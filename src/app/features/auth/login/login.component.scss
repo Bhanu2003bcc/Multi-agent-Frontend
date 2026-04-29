@@ -1,0 +1,364 @@
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+
+  @media (max-width: 480px) {
+    padding: 1rem;
+  }
+
+  @media (max-width: 360px) {
+    padding: 0.75rem;
+  }
+}
+
+.auth-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+
+  &__grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(240,165,0,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(240,165,0,0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
+
+    @media (max-width: 480px) {
+      background-size: 36px 36px;
+    }
+  }
+
+  &__glow {
+    position: absolute;
+    top: -20%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(ellipse, rgba(240,165,0,0.06) 0%, transparent 70%);
+    filter: blur(40px);
+
+    @media (max-width: 640px) {
+      width: 400px;
+      height: 400px;
+      filter: blur(30px);
+    }
+
+    @media (max-width: 480px) {
+      width: 300px;
+      height: 300px;
+      top: -10%;
+      filter: blur(25px);
+    }
+  }
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: 2.5rem;
+  box-shadow: var(--shadow-modal);
+  position: relative;
+  z-index: 1;
+
+  @media (max-width: 640px) {
+    max-width: 100%;
+    padding: 2rem;
+  }
+
+  @media (max-width: 480px) {
+    padding: 1.75rem;
+    border-radius: var(--radius-lg);
+  }
+
+  @media (max-width: 360px) {
+    padding: 1.5rem;
+  }
+}
+
+.auth-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+
+  svg {
+    width: 36px;
+    height: 36px;
+
+    @media (max-width: 480px) {
+      width: 32px;
+      height: 32px;
+    }
+  }
+
+  &__name {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    color: var(--text-primary);
+
+    @media (max-width: 480px) {
+      font-size: 1.125rem;
+    }
+  }
+}
+
+.auth-heading {
+  margin-bottom: 2rem;
+
+  h1 {
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    color: var(--text-primary);
+    font-weight: 400;
+    margin-bottom: 0.375rem;
+    word-wrap: break-word;
+
+    @media (max-width: 480px) {
+      font-size: 1.5rem;
+      margin-bottom: 0.25rem;
+    }
+
+    @media (max-width: 360px) {
+      font-size: 1.25rem;
+    }
+  }
+
+  p {
+    color: var(--text-muted);
+    font-size: 0.9375rem;
+
+    @media (max-width: 480px) {
+      font-size: 0.875rem;
+    }
+
+    @media (max-width: 360px) {
+      font-size: 0.8125rem;
+    }
+  }
+}
+
+.input-group {
+  position: relative;
+
+  .form-control {
+    padding-right: 2.75rem;
+  }
+
+  &__toggle {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0.25rem;
+    display: flex;
+    align-items: center;
+    transition: color var(--transition-fast);
+
+    &:hover {
+      color: var(--text-secondary);
+    }
+
+    svg {
+      width: 14px;
+      height: 14px;
+
+      @media (max-width: 480px) {
+        width: 16px;
+        height: 16px;
+      }
+    }
+  }
+}
+
+.auth-footer {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  color: var(--text-muted) !important;
+  word-wrap: break-word;
+
+  @media (max-width: 480px) {
+    font-size: 0.875rem;
+    margin-top: 1.25rem;
+  }
+
+  a {
+    color: var(--color-accent);
+    font-weight: 500;
+  }
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.5rem 0;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+
+  @media (max-width: 480px) {
+    gap: 0.75rem;
+    margin: 1.25rem 0;
+    font-size: 0.75rem;
+  }
+
+  &::before, &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--color-border);
+  }
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   LOGIN COMPONENT — MOBILE RESPONSIVE ENHANCEMENTS
+   Ensures consistent experience across all device sizes
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.auth-card--login {
+  max-width: 420px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+
+  @media screen and (max-width: 768px) {
+    max-width: 100% !important;
+    padding: 2rem !important;
+  }
+
+  @media screen and (max-width: 640px) {
+    max-width: calc(100% - 2rem) !important;
+    padding: 2rem !important;
+  }
+
+  @media screen and (max-width: 480px) {
+    max-width: calc(100% - 1.5rem) !important;
+    padding: 1.75rem !important;
+  }
+
+  @media screen and (max-width: 360px) {
+    max-width: calc(100% - 1rem) !important;
+    padding: 1.5rem !important;
+  }
+}
+
+/* Mobile-specific typography and spacing */
+@media screen and (max-width: 480px) {
+  :host ::ng-deep {
+    .auth-heading h1 {
+      font-size: 1.5rem !important;
+      line-height: 1.3 !important;
+      margin-bottom: 0.25rem !important;
+    }
+
+    .auth-heading p {
+      font-size: 0.875rem !important;
+      line-height: 1.4 !important;
+    }
+
+    .auth-brand {
+      margin-bottom: 1.5rem !important;
+
+      svg {
+        width: 32px !important;
+        height: 32px !important;
+        flex-shrink: 0;
+      }
+
+      &__name {
+        font-size: 1.125rem !important;
+      }
+    }
+
+    .form-label {
+      font-size: 0.75rem !important;
+      margin-bottom: 0.375rem !important;
+    }
+
+    .form-control,
+    input.form-control {
+      font-size: 16px !important; /* Prevents iOS zoom */
+      padding: 0.65rem 0.875rem !important;
+      min-height: 44px !important; /* iOS touch target */
+      box-sizing: border-box !important;
+    }
+
+    .input-group__toggle {
+      right: 0.5rem !important;
+
+      svg {
+        width: 16px !important;
+        height: 16px !important;
+      }
+    }
+
+    .form-error {
+      font-size: 0.75rem !important;
+      margin-top: 0.25rem !important;
+    }
+
+    .btn {
+      font-size: 0.9rem !important;
+      padding: 0.75rem 1.25rem !important;
+      min-height: 44px !important; /* iOS touch target */
+    }
+
+    .auth-footer {
+      font-size: 0.8125rem !important;
+      margin-top: 1rem !important;
+      line-height: 1.4;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .mt-4 {
+      margin-top: 1rem !important;
+    }
+
+    .mt-6 {
+      margin-top: 1.5rem !important;
+    }
+  }
+}
+
+/* Extra small phones */
+@media screen and (max-width: 360px) {
+  :host ::ng-deep {
+    .auth-heading h1 {
+      font-size: 1.25rem !important;
+    }
+
+    .auth-brand__name {
+      font-size: 1rem !important;
+    }
+
+    .form-control,
+    input.form-control {
+      font-size: 15px !important;
+      padding: 0.6rem 0.75rem !important;
+    }
+
+    .btn {
+      font-size: 0.85rem !important;
+    }
+  }
+}

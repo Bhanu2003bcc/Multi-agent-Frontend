@@ -1,0 +1,123 @@
+<div class="app-shell">
+  <app-sidebar />
+
+  <main class="app-main">
+    <div class="page-content">
+
+      <!-- Header -->
+      <div class="page-header fade-in">
+        <div class="page-header__eyebrow">Overview</div>
+        <h1 class="page-header__title">
+          Good {{ greeting }},
+          <em style="font-style:italic; color: var(--color-accent)">{{ currentUser()?.username }}</em>
+        </h1>
+        <p class="page-header__subtitle">Your research intelligence hub</p>
+      </div>
+
+      <!-- CTA -->
+      <div class="cta-card fade-in fade-in-delay-1">
+        <div class="cta-card__content">
+          <div class="cta-card__icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+              <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/>
+            </svg>
+          </div>
+          <div>
+            <h3>Start a new research query</h3>
+            <p>Let the multi-agent pipeline search, scrape, analyse and synthesise an answer for you.</p>
+          </div>
+        </div>
+        <a routerLink="/research/new" class="btn btn--primary btn--lg">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          New Research
+        </a>
+      </div>
+
+      <!-- Stats row -->
+      <div class="stats-grid fade-in fade-in-delay-2">
+        <div class="card metric-tile">
+          <div class="metric-value">{{ stats().total }}</div>
+          <div class="metric-label">Total Queries</div>
+        </div>
+        <div class="card metric-tile">
+          <div class="metric-value" style="color: var(--color-success)">{{ stats().completed }}</div>
+          <div class="metric-label">Completed</div>
+        </div>
+        <div class="card metric-tile">
+          <div class="metric-value" style="color: var(--color-warning)">{{ stats().inProgress }}</div>
+          <div class="metric-label">In Progress</div>
+        </div>
+        <div class="card metric-tile">
+          <div class="metric-value" style="color: var(--color-error)">{{ stats().failed }}</div>
+          <div class="metric-label">Failed</div>
+        </div>
+      </div>
+
+      <!-- Recent jobs -->
+      <div class="fade-in fade-in-delay-3">
+        <div class="section-header">
+          <h4>Recent Research</h4>
+          <a routerLink="/research/history" class="btn btn--ghost btn--sm">View all</a>
+        </div>
+
+        @if (loading()) {
+          <div class="card">
+            <div class="flex items-center gap-3" style="padding: 1rem 0">
+              <div class="spinner"></div>
+              <span class="text-muted">Loading recent activity…</span>
+            </div>
+          </div>
+        }
+
+        @if (!loading() && recentJobs().length === 0) {
+          <div class="card">
+            <div class="empty-state" style="padding: 2.5rem 1rem">
+              <div class="empty-state__icon">🔍</div>
+              <div class="empty-state__title">No research yet</div>
+              <div class="empty-state__desc">Submit your first query to see results here.</div>
+              <a routerLink="/research/new" class="btn btn--primary mt-4">Start researching</a>
+            </div>
+          </div>
+        }
+
+        @if (!loading() && recentJobs().length > 0) {
+          <div class="jobs-list">
+            @for (job of recentJobs(); track job.jobId) {
+              <a [routerLink]="['/research', job.jobId]"
+                 class="job-row card card--glow">
+                <div class="job-row__main">
+                  <div class="job-row__query">{{ job.query }}</div>
+                  <div class="job-row__meta">
+                    <span class="text-mono text-muted" style="font-size:0.75rem">{{ timeAgo(job.createdAt) }}</span>
+                    @if (job.elapsedMs) {
+                      <span class="text-mono text-muted" style="font-size:0.75rem">{{ elapsedLabel(job) }}</span>
+                    }
+                    @if (job.result?.confidence) {
+                      <span class="confidence-pill">
+                        {{ (job.result!.confidence * 100).toFixed(0) }}% confidence
+                      </span>
+                    }
+                  </div>
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="badge badge--{{ job.status.toLowerCase() }}">
+                    @if (job.status === 'IN_PROGRESS') {
+                      <span class="badge-dot"></span>
+                    }
+                    {{ job.status.replace('_', ' ') }}
+                  </span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 18l6-6-6-6"/>
+                  </svg>
+                </div>
+              </a>
+            }
+          </div>
+        }
+      </div>
+
+    </div>
+  </main>
+</div>

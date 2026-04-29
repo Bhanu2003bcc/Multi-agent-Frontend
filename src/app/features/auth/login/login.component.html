@@ -1,0 +1,84 @@
+<div class="auth-page">
+  <div class="auth-bg">
+    <div class="auth-bg__grid"></div>
+    <div class="auth-bg__glow"></div>
+  </div>
+
+  <div class="auth-card auth-card--login fade-in" style="width: 100%; box-sizing: border-box;">
+
+    <!-- Brand -->
+    <div class="auth-brand">
+      <svg width="36" height="36" viewBox="0 0 28 28" fill="none">
+        <circle cx="14" cy="14" r="13" stroke="#f0a500" stroke-width="1.5"/>
+        <path d="M8 14h5m0 0l-2-3m2 3l-2 3m5-3h5m-2-3l2 3-2 3" stroke="#f0a500" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cx="8" cy="14" r="2" fill="#f0a500"/>
+        <circle cx="20" cy="14" r="2" fill="#f0a500"/>
+      </svg>
+      <span class="auth-brand__name">ResearchAI</span>
+    </div>
+
+    <div class="auth-heading">
+      <h1>Welcome back</h1>
+      <p>Sign in to your research workspace</p>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+
+      <!-- Username -->
+      <div class="form-group">
+        <label class="form-label" for="username">Username</label>
+        <input id="username" type="text" class="form-control"
+               formControlName="username" placeholder="your_username"
+               autocomplete="username" [class.ng-invalid]="usernameControl.invalid"
+               [class.ng-touched]="usernameControl.touched"/>
+        @if (usernameControl.invalid && usernameControl.touched) {
+          <span class="form-error">Username is required (min. 3 characters)</span>
+        }
+      </div>
+
+      <!-- Password -->
+      <div class="form-group mt-4">
+        <label class="form-label" for="password">Password</label>
+        <div class="input-group">
+          <input id="password" [type]="showPassword() ? 'text' : 'password'"
+                 class="form-control" formControlName="password"
+                 placeholder="••••••••" autocomplete="current-password"
+                 [class.ng-invalid]="passwordControl.invalid"
+                 [class.ng-touched]="passwordControl.touched"/>
+          <button type="button" class="input-group__toggle"
+                  (click)="showPassword.update(v => !v)" tabindex="-1">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+              @if (!showPassword()) {
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              } @else {
+                <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/>
+                <path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/>
+                <line x1="1" y1="1" x2="23" y2="23"/>
+              }
+            </svg>
+          </button>
+        </div>
+        @if (passwordControl.invalid && passwordControl.touched) {
+          <span class="form-error">Password is required (min. 6 characters)</span>
+        }
+      </div>
+
+      <!-- Submit -->
+      <button type="submit" class="btn btn--primary btn--full btn--lg mt-6"
+              [disabled]="loading()">
+        @if (loading()) {
+          <span class="spinner spinner--sm"></span>
+        }
+        <span>{{ loading() ? 'Signing in…' : 'Sign in' }}</span>
+      </button>
+
+    </form>
+
+    <p class="auth-footer">
+      Don't have an account?
+      <a routerLink="/auth/register">Create one</a>
+    </p>
+
+  </div>
+</div>

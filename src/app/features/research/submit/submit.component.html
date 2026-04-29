@@ -1,0 +1,132 @@
+<div class="app-shell">
+  <app-sidebar />
+
+  <main class="app-main">
+    <div class="page-content">
+
+      <div class="page-header fade-in">
+        <div class="page-header__eyebrow">Research</div>
+        <h1 class="page-header__title">New Research Query</h1>
+        <p class="page-header__subtitle">Ask anything — the multi-agent pipeline will search, read, and synthesise.</p>
+      </div>
+
+      <div class="submit-layout">
+
+        <!-- Main form -->
+        <div class="submit-form-col fade-in fade-in-delay-1">
+          <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+            <div class="card query-card">
+              <div class="query-card__header">
+                <label class="form-label" for="query">Research Question</label>
+                <span class="char-count" [class.char-count--warn]="charCount > 450">
+                  {{ charCount }} / 500
+                </span>
+              </div>
+              <textarea id="query" class="form-control query-textarea"
+                        formControlName="query"
+                        placeholder="e.g. What are the latest breakthroughs in quantum computing in 2025?"
+                        rows="5"></textarea>
+              @if (queryControl.invalid && queryControl.touched) {
+                <div class="form-error mt-2">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                  </svg>
+                  Query is required (3–500 characters)
+                </div>
+              }
+            </div>
+
+            <!-- Advanced settings -->
+            @if (showAdvanced()) {
+              <div class="card mt-4">
+                <h4 class="advanced-title">Pipeline Parameters</h4>
+                <div class="params-grid">
+                  <div class="form-group">
+                    <label class="form-label">Search Results (N)</label>
+                    <input type="number" class="form-control" formControlName="searchTopN" min="1" max="20"/>
+                    <p class="param-hint">Exa API results to fetch</p>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Re-rank Keep (K)</label>
+                    <input type="number" class="form-control" formControlName="rerankerTopK" min="1" max="10"/>
+                    <p class="param-hint">Results after cross-encoder re-ranking</p>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Retrieval Chunks (K)</label>
+                    <input type="number" class="form-control" formControlName="retrieverTopK" min="1" max="20"/>
+                    <p class="param-hint">FAISS chunks passed to writer</p>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Refinement Iterations</label>
+                    <input type="number" class="form-control" formControlName="refinementIterations" min="0" max="3"/>
+                    <p class="param-hint">Writer ↔ Critic improvement loops</p>
+                  </div>
+                </div>
+              </div>
+            }
+
+            <!-- Actions -->
+            <div class="form-actions mt-4">
+              <button type="button" class="btn btn--secondary"
+                      (click)="showAdvanced.update(v => !v)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                  <circle cx="12" cy="12" r="3"/>
+                  <path d="M19.07 4.93l-1.41 1.41M5.34 18.66l-1.41 1.41M21 12h-2M5 12H3M19.07 19.07l-1.41-1.41M5.34 5.34L3.93 3.93"/>
+                </svg>
+                {{ showAdvanced() ? 'Hide' : 'Advanced' }} settings
+              </button>
+
+              <button type="submit" class="btn btn--primary btn--lg" [disabled]="form.invalid || loading()">
+                @if (loading()) {
+                  <span class="spinner spinner--sm"></span>
+                }
+                @if (!loading()) {
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/>
+                  </svg>
+                }
+                {{ loading() ? 'Launching pipeline…' : 'Run Research' }}
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Examples sidebar -->
+        <div class="examples-col fade-in fade-in-delay-2">
+          <div class="card examples-card">
+            <h4 class="examples-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                <polygon points="13,2 3,14 12,14 11,22 21,10 12,10 13,2"/>
+              </svg>
+              Example Queries
+            </h4>
+            <p class="examples-subtitle">Click to use as your query</p>
+            <div class="examples-list">
+              @for (q of exampleQueries; track q) {
+                <button class="example-item" (click)="useExample(q)">
+                  {{ q }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <!-- Pipeline info -->
+          <div class="card pipeline-info mt-4">
+            <h4 class="examples-title">Pipeline Stages</h4>
+            <ol class="pipeline-stages">
+              <li>Search <span>Exa API real-time</span></li>
+              <li>Re-rank <span>Cross-encoder scoring</span></li>
+              <li>Read <span>Web scraping</span></li>
+              <li>Embed <span>FAISS indexing</span></li>
+              <li>Retrieve <span>Semantic chunks</span></li>
+              <li>Write <span>LLM synthesis</span></li>
+              <li>Critique <span>Quality review</span></li>
+              <li>Refine <span>Iterative improvement</span></li>
+            </ol>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>

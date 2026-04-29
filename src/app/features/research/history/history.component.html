@@ -1,0 +1,136 @@
+<div class="app-shell">
+  <app-sidebar />
+
+  <main class="app-main">
+    <div class="page-content">
+
+      <div class="page-header fade-in">
+        <div class="page-header__eyebrow">Research</div>
+        <h1 class="page-header__title">Query History</h1>
+        <p class="page-header__subtitle">All your past and active research jobs</p>
+      </div>
+
+      @if (loading()) {
+        <div class="card fade-in">
+          <div class="flex items-center gap-3" style="padding: 1rem 0">
+            <div class="spinner"></div>
+            <span class="text-muted">Loading research history…</span>
+          </div>
+        </div>
+      }
+
+      @if (!loading() && page()?.content?.length === 0) {
+        <div class="card fade-in">
+          <div class="empty-state">
+            <div class="empty-state__icon">📋</div>
+            <div class="empty-state__title">No research history yet</div>
+            <div class="empty-state__desc">Your submitted queries will appear here once you start researching.</div>
+            <a routerLink="/research/new" class="btn btn--primary mt-4">Start your first research</a>
+          </div>
+        </div>
+      }
+
+      @if (!loading() && page() && page()!.content.length > 0) {
+        <div class="fade-in">
+
+          <!-- Summary -->
+          <div class="history-summary">
+            <span class="text-mono text-muted" style="font-size:0.8125rem">
+              {{ page()!.totalElements }} total queries
+            </span>
+          </div>
+
+          <div class="history-table card">
+            <table>
+              <thead>
+                <tr>
+                  <th>Query</th>
+                  <th>Status</th>
+                  <th>Confidence</th>
+                  <th>Duration</th>
+                  <th>Date</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (job of page()!.content; track job.jobId) {
+                  <tr class="history-row"
+                      [routerLink]="['/research', job.jobId]">
+                    <td class="query-cell">
+                      <span class="query-text">{{ job.query }}</span>
+                    </td>
+                    <td>
+                      <span class="badge badge--{{ job.status.toLowerCase() }}">
+                        @if (job.status === 'IN_PROGRESS') {
+                          <span class="badge-pulse"></span>
+                        }
+                        {{ job.status.replace('_', ' ') }}
+                      </span>
+                    </td>
+                    <td>
+                      @if (job.result?.confidence) {
+                        <span class="confidence-chip"
+                              [style.color]="confidenceColor(job.result!.confidence)">
+                          {{ (job.result!.confidence * 100).toFixed(0) }}%
+                        </span>
+                      } @else {
+                        <span class="text-muted text-mono" style="font-size:0.8125rem">—</span>
+                      }
+                    </td>
+                    <td>
+                      <span class="text-mono text-muted" style="font-size:0.8125rem">
+                        {{ elapsedLabel(job.elapsedMs) }}
+                      </span>
+                    </td>
+                    <td>
+                      <div class="date-cell">
+                        <span>{{ formatDate(job.createdAt) }}</span>
+                        <span class="text-muted" style="font-size:0.75rem">{{ timeAgo(job.createdAt) }}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                           stroke="currentColor" stroke-width="1.75" class="text-muted">
+                        <path d="M9 18l6-6-6-6"/>
+                      </svg>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          @if (page()!.totalPages > 1) {
+            <div class="pagination">
+              <button class="pagination__btn" [disabled]="page()!.first" (click)="prevPage()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M15 18l-6-6 6-6"/>
+                </svg>
+                Previous
+              </button>
+
+              <div class="pagination__pages">
+                @for (p of pages; track p) {
+                  <button class="pagination__page"
+                          [class.pagination__page--active]="p === currentPage()"
+                          (click)="loadPage(p)">
+                    {{ p + 1 }}
+                  </button>
+                }
+              </div>
+
+              <button class="pagination__btn" [disabled]="page()!.last" (click)="nextPage()">
+                Next
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 18l6-6-6-6"/>
+                </svg>
+              </button>
+            </div>
+          }
+
+        </div>
+      }
+    </div>
+  </main>
+</div>
