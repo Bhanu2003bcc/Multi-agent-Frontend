@@ -7,8 +7,8 @@ dist/
 # Angular cache
 .angular/
 
-# Environment files (if you store secrets)
-src/environments/*.ts
+# Environment files (keep both tracked)
+!src/environments/environment.ts
 !src/environments/environment.prod.ts
 
 # Logs
